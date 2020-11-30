@@ -1,0 +1,13 @@
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: efs-csi-node
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: efs-csi-node-bottlerocket
+  template:
+    metadata:
+      labels:
+        app: efs-csi-node-bottlerocket

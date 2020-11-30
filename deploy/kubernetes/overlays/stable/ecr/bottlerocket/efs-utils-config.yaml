@@ -1,0 +1,13 @@
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: efs-csi-node
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      volumes:
+        - name: efs-utils-config
+          hostPath:
+            path: /var/amazon/efs
+            type: DirectoryOrCreate
