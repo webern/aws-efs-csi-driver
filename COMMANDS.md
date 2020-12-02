@@ -22,9 +22,15 @@ export IP_ADDRESS=$(aws ec2 describe-instances --filters Name=instance-id,Values
 ```sh
 export CLUSTER_NAME=grog && kube:env $CLUSTER_NAME
 export CSI=$REPOS/aws-efs-csi-driver
-cd $CSI/deploy/kubernetes
+cd $CSI/deploy/kubernetes/overlays/stable/ecr
+kubectl apply -k $CSI/deploy/kubernetes/overlays/stable/ecr
 
+```
 
+## Delete Daemonset
+
+```sh
+kubectl delete -k $CSI/deploy/kubernetes/overlays/stable/ecr
 ```
 
 ## Prep to deploy Example App
