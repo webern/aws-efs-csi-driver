@@ -105,4 +105,8 @@ spec:
           hostPath:
             path: /etc/amazon/efs
             type: DirectoryOrCreate
+        - name: efs-csi-logs
+          hostPath:
+            path: /var/log/amazon/efs
+            type: DirectoryOrCreate
 
