@@ -33,6 +33,7 @@ kubectl apply -k $CSI/deploy/kubernetes/overlays/stable/ecr
 kubectl get pods -n kube-system
 export CSI_POD=$(kubectl get pods -n kube-system | grep efs-csi-node | blah not worth it)
 kubectl describe pod efs-csi-node-w57j7 -n kube-system
+kubectl delete -k $CSI/deploy/kubernetes/overlays/stable/ecr
 ```
 
 ## Example App
@@ -53,23 +54,28 @@ aws ec2 create-security-group \
 export FS_SG_ID=$(aws ec2 describe-security-groups \
   --filters "Name=group-name,Values=$CLUSTER_NAME-efs-sg" \
   --output json | jq -r '.SecurityGroups | .[0] | .GroupId')
-
 aws ec2 authorize-security-group-ingress \
   --group-id "${FS_SG_ID}" \
   --protocol "all" \
-  --port "" \
-
-
-export FS_ID=$(aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output text)
+  --port "2049" \
+  --cidr "${CIDR}"
+export FS_ID=$(aws efs describe-file-systems \
+  --output json | \
+  jq -r ".FileSystems[] | select(.Name==\"${CLUSTER_NAME}-efs\").FileSystemId")
 cd $REPOS
 export EXAMPLE_REPO=$REPOS/aws-efs-csi-example
 rm -rf $EXAMPLE_REPO && git clone https://github.com/kubernetes-sigs/aws-efs-csi-driver.git $EXAMPLE_REPO
 cd $EXAMPLE_REPO/examples/kubernetes/multiple_pods/
 sed -i.backup "s/fs-4af69aab/$FS_ID/" specs/pv.yaml
 rm specs/pv.yaml.backup
+cat $EXAMPLE_REPO/examples/kubernetes/multiple_pods/specs/pv.yaml
 kubectl apply -f $EXAMPLE_REPO/examples/kubernetes/multiple_pods/specs
 kubectl get pv
 kubectl describe pv efs-pv
+kubectl get pods --watch
+kubectl exec -ti app1 -- tail /data/out1.txt
+kubectl exec -ti app2 -- tail /data/out1.txt
+kubektl describe pod app1
 ```
 
 Delete it

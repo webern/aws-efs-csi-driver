@@ -26,6 +26,9 @@ import (
 	"github.com/kubernetes-sigs/aws-efs-csi-driver/pkg/driver"
 )
 
+/// This is the non-negotiable directory that the mount.efs will use for config files. We will create a symlink here.
+const etcAmazonEfs = "/etc/amazon/efs"
+
 func main() {
 	var (
 		endpoint                 = flag.String("endpoint", "unix://tmp/csi.sock", "CSI Endpoint")
@@ -50,11 +53,11 @@ func main() {
 	}
 
 	// chose which configuration directory we will use
-	configDir, err := driver.InitConfigDir(*efsUtilsCfgLegacyDirPath, *efsUtilsCfgDirPath)
+	err := driver.InitConfigDir(*efsUtilsCfgLegacyDirPath, *efsUtilsCfgDirPath, etcAmazonEfs)
 	if err != nil {
 		klog.Fatalln(err)
 	}
-	drv := driver.NewDriver(*endpoint, configDir, *efsUtilsStaticFilesPath, *volMetricsOptIn, *volMetricsRefreshPeriod, *volMetricsFsRateLimit)
+	drv := driver.NewDriver(*endpoint, etcAmazonEfs, *efsUtilsStaticFilesPath, *volMetricsOptIn, *volMetricsRefreshPeriod, *volMetricsFsRateLimit)
 	if err := drv.Run(); err != nil {
 		klog.Fatalln(err)
 	}
