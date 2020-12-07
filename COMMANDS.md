@@ -35,6 +35,11 @@ kubectl get pods -n kube-system
 export CSI_POD=$(kubectl get pods -n kube-system | grep efs-csi-node | blah not worth it)
 kubectl describe pod efs-csi-node-w57j7 -n kube-system
 kubectl delete -k $CSI/deploy/kubernetes/overlays/stable/ecr
+
+
+kubectl describe pod efs-csi-node-ck7bq -n kube-system | grep Node && kubectl get nodes
+kubectl describe pod efs-csi-node-scfkg -n kube-system | grep Node && kubectl get nodes
+kubectl describe pod app2 | grep Node && kubectl get nodes
 ```
 
 #### Notes from a test run
