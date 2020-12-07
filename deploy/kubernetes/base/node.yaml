@@ -44,8 +44,6 @@ spec:
               mountPath: /var/amazon/efs
             - name: efs-utils-config-legacy
               mountPath: /etc/amazon/efs-legacy
-            - name: efs-csi-logs
-              mountPath: /var/log/amazon/efs
           ports:
             - containerPort: 9809
               name: healthz
@@ -111,8 +109,5 @@ spec:
           hostPath:
             path: /etc/amazon/efs
             type: DirectoryOrCreate
-        - name: efs-csi-logs
-          hostPath:
-            path: /var/log/amazon/efs
-            type: DirectoryOrCreate
+
 
