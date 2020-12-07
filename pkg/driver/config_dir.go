@@ -23,22 +23,26 @@ import (
 	"path"
 )
 
-// InitConfigDir decides which of two directories will be used to store driver config files. It creates a symlink to
-// the chosen location, and returns the path of that symlink. legacyDir is the path to a config directory where previous
-// versions of this driver may have written config files. In previous versions of this driver, a host path that was not
-// writeable on Bottlerocket hosts was being used, so we introduce preferredDir so that, going forward, we can use a new
-// location on the host. etcAmazonEfs is the path where the symlink will be written. In practice, this will always be
-// /etc/amazon/efs, but we take it as an input so the function can be tested.
+// InitConfigDir decides which of two directories will be used to store driver config files. It creates a symlink at
+// etcAmazonEfs to the chosen location (either legacyDir or preferredDir).
 //
+// - legacyDir    is the path to a config directory where previous versions of this driver may have written config
+//                files. In previous versions of this driver, a host path that was not writeable on Bottlerocket hosts
+//                was being used, so we introduce preferredDir.
+//
+// - preferredDir is the path to config directory that we will use so long as we do not find files in legacyDir.
+//
+// - etcAmazonEfs is the path where the symlink will be written. In practice, this will always be /etc/amazon/efs, but
+//                we take it as an input so the function can be tested.
 // Examples:
 // On a host that has EFS mounts created by an earlier version of this driver, InitConfigDir will detect a conf file in
-// legacyDir and write a symlink to that directory.
+// legacyDir and write a symlink at etcAmazonEfs pointing to legacyDir.
 //
-// On a host that does not have pre-existing legacyDir EFS mount configs, InitConfigDir will detect no files in
-// legacyDir and will instead point the symlink to preferredDir.
+// On a host that does not have pre-existing legacy EFS mount configs, InitConfigDir will detect no files in  legacyDir
+// and will create a symlink at etcAmazonEfs pointing to preferredDir.
 //
-// This allows us to gracefully change the location that we store config files on the host, without disrupting pre-
-// existing mounts.
+// If a symlink already existing at etcAmazonEfs, InitConfigDir does nothing. If something other than a symlink exists
+// at etcAmazonEfs, InitConfigDir returns an error.
 func InitConfigDir(legacyDir, preferredDir, etcAmazonEfs string) error {
 
 	// if there is already a symlink in place, we have nothing to do
