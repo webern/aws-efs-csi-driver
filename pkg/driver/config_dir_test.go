@@ -35,7 +35,6 @@ func tempDir(t *testing.T) string {
 // TestInitConfigDirPreExistingConfig asserts that a symlink is created to the legacy directory if efs-utils.conf is
 // found there.
 func TestInitConfigDirPreExistingConfig(t *testing.T) {
-	// Setup the full driver and its environment
 	dir := tempDir(t)
 	defer os.RemoveAll(dir)
 
@@ -88,7 +87,6 @@ func TestInitConfigDirPreExistingConfig(t *testing.T) {
 // TestInitConfigDirPreferred asserts that a symlink is created to the preferred directory if efs-utils.conf is
 // not found in the legacy location.
 func TestInitConfigDirPreferred(t *testing.T) {
-	// Setup the full driver and its environment
 	dir := tempDir(t)
 	defer os.RemoveAll(dir)
 
@@ -132,9 +130,8 @@ func TestInitConfigDirPreferred(t *testing.T) {
 	}
 }
 
-// TestInitConfigDirDoNothing asserts that a pre-existing symlink does not get messed up.
+// TestInitConfigDirDoNothing asserts that a pre-existing symlink is not altered.
 func TestInitConfigDirDoNothing(t *testing.T) {
-	// Setup the full driver and its environment
 	dir := tempDir(t)
 	defer os.RemoveAll(dir)
 
@@ -180,5 +177,22 @@ func TestInitConfigDirDoNothing(t *testing.T) {
 	// assert that the file was created in the legacy dir
 	if _, err := os.Stat(expectedLocation); err != nil {
 		t.Errorf("foo.txt was not created in the preferred directory '%s'", legacyDir)
+	}
+}
+
+// TestInitConfigDirError should error because a directory exists where we ask the function to put a symlink.
+func TestInitConfigDirError(t *testing.T) {
+	dir := tempDir(t)
+	defer os.RemoveAll(dir)
+
+	// create a directory that should not exist
+	etcAmazonEfs := filepath.Join(dir, "etc-amazon-efs")
+	if err := os.MkdirAll(etcAmazonEfs, os.ModePerm); err != nil {
+		t.Fatalf("Unable to create directory: %v", err)
+	}
+
+	// function under test
+	if err := InitConfigDir("whatever1", "whatever2", etcAmazonEfs); err == nil {
+		t.Errorf("InitConfigDir was expected to return an error but did not.")
 	}
 }
